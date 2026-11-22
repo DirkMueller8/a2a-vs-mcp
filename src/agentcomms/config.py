@@ -20,3 +20,16 @@ def get_api_key() -> str:
 
 def get_model() -> str:
     return os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+
+
+def get_anthropic_key() -> str:
+    key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not key or key == PLACEHOLDER:
+        raise RuntimeError(
+            "ANTHROPIC_API_KEY is not set. Add it to .env (see .env.example and README)."
+        )
+    return key
+
+
+def get_anthropic_model() -> str:
+    return os.environ.get("ANTHROPIC_MODEL", "claude-opus-5-5")

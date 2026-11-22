@@ -14,6 +14,7 @@ build/
 dist/
 
 # Notebooks / IDE
+docs/agentcomms.ipynb
 .ipynb_checkpoints/
 .vscode/
 .idea/

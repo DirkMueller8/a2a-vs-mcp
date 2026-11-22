@@ -6,7 +6,7 @@ messages; two OpenAI-backed agents take turns reading the latest message and rep
 - **agent_2** summarises the text it receives (`performative: inform`).
 - **agent_1** writes a new passage based on that summary (`performative: request`).
 
-Derived from the exercise in [`docs/agentcomms.ipynb`](docs/agentcomms.ipynb).
+Based on a teaching exercise notebook for building an agent-to-agent communication loop (the notebook itself is not included in this repository).
 
 ## Protocol
 
@@ -82,6 +82,53 @@ Options: `--port`, `--turns`, `--delay`, `--conversation-id`. The server binds t
 only. To expose it publicly (the notebook used ngrok) run `ngrok http 5000` yourself; note the
 server has no authentication, so don't leave it exposed.
 
+## MCP variant (Anthropic Claude)
+
+A comparable version where the mailbox is an **MCP server** instead of a REST server, and the agents
+are driven by **Claude** instead of OpenAI. Same prompts, same message format, same turn logic.
+
+```powershell
+# add ANTHROPIC_API_KEY to .env first (see .env.example)
+python -m agentcomms.run_demo_mcp --turns 6 --delay 1
+```
+
+The client launches `agentcomms.mcp_server` as a stdio subprocess (no port is opened) and calls two tools.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Demo client<br/>(MCP client)
+    participant S as MCP server<br/>(stdio subprocess)
+    participant LLM as Anthropic API
+
+    C->>S: initialize
+    C->>S: call_tool post_message (agent_1 to agent_2, request)
+    loop each turn
+        C->>S: call_tool get_conversation(conv_100)
+        S-->>C: messages
+        C->>LLM: messages.create (summarise / write new passage)
+        LLM-->>C: text
+        C->>S: call_tool post_message (reply)
+    end
+```
+
+### REST vs MCP at a glance
+
+| | REST / A2A-style (`python -m agentcomms`) | MCP (`python -m agentcomms.run_demo_mcp`) |
+|---|---|---|
+| Mailbox | Flask server, HTTP on `127.0.0.1:5000` | MCP server, stdio subprocess |
+| Write / read | `POST /a2a`, `GET /a2a/<id>` | tools `post_message`, `get_conversation` |
+| Validation | Hand-written required-field check, `400` | Tool input schema derived from the function signature |
+| Discovery | None; client must know the URLs | `tools/list` returns names, descriptions, JSON schemas |
+| Network exposure | Open port (unauthenticated) | None with stdio |
+| Who can call it | Any HTTP client | Any MCP client, including an LLM that picks tools itself |
+| LLM | OpenAI `gpt-4o-mini` | Claude (`ANTHROPIC_MODEL`, default `claude-opus-5-5`) |
+| Orchestration | Python loop | Python loop (same, for a like-for-like comparison) |
+
+Note the two variants differ in both transport and LLM, so output differences mix both effects.
+The Claude calls enable the server-side refusal fallback (beta) by default; costs and behaviour are
+described in the Anthropic docs.
+
 ## Test
 
 ```powershell
@@ -93,7 +140,7 @@ Tests mock OpenAI, so no key or network is needed.
 ## Layout
 
 ```
-src/agentcomms/   server.py (Flask), agents.py (LLM agents), config.py (key loading), run_demo.py
+src/agentcomms/   server.py (Flask), agents.py (OpenAI agents), config.py (key loading), run_demo.py
+                  mcp_server.py (MCP mailbox), agents_claude.py (Claude agents), run_demo_mcp.py
 tests/            pytest suite
-docs/             original notebook
 ```

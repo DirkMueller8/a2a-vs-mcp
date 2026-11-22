@@ -11,7 +11,7 @@ from .agents import build_message, next_message
 from .config import get_api_key, get_model
 from .server import create_app, serve_in_background
 
-START_TEXT = "AI security is really important and you should definitely read Harriet's book."
+START_TEXT = "AI is transforming healthcare by enabling early detection of diseases and providing personalized treatment options."
 
 
 def main() -> None:
@@ -20,10 +20,14 @@ def main() -> None:
     p.add_argument("--turns", type=int, default=6)
     p.add_argument("--delay", type=float, default=1.0, help="seconds between turns")
     p.add_argument("--conversation-id", default="conv_100")
+    p.add_argument("--show-model", action="store_true", help="print the configured model and exit")
     args = p.parse_args()
 
-    client = OpenAI(api_key=get_api_key())
     model = get_model()
+    print(f"Provider: OpenAI | Model: {model}")
+    if args.show_model:
+        return
+    client = OpenAI(api_key=get_api_key())
     url = f"http://127.0.0.1:{args.port}/a2a"
 
     server = serve_in_background(create_app(), port=args.port)
