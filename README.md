@@ -124,7 +124,7 @@ sequenceDiagram
 | Discovery | None; client must know the URLs | `tools/list` returns names, descriptions, JSON schemas |
 | Network exposure | Open port (unauthenticated) | None with stdio |
 | Who can call it | Any HTTP client | Any MCP client, including an LLM that picks tools itself |
-| LLM | OpenAI `gpt-4o-mini` | Claude (`ANTHROPIC_MODEL`, default `claude-opus-5-5`) |
+| LLM | OpenAI `gpt-4o-mini` | Claude, set via `ANTHROPIC_MODEL` in `.env` (falls back to `claude-opus-5-5` if unset; the demo here was run with `claude-haiku-5-5`) |
 | Orchestration | Python loop | Python loop (same, for a like-for-like comparison) |
 
 Note the two variants differ in both transport and LLM, so output differences mix both effects.
