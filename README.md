@@ -1,4 +1,6 @@
-# agentcomms
+# Comparing A2A-Type of Agent-to-Agent Communication with MCP
+
+## Agent-to-Agent (A2A-style) Communication
 
 A small demo of an agent-to-agent (A2A-style) communication loop. A Flask REST server stores
 messages; two OpenAI-backed agents take turns reading the latest message and replying:
@@ -6,9 +8,9 @@ messages; two OpenAI-backed agents take turns reading the latest message and rep
 - **agent_2** summarises the text it receives (`performative: inform`).
 - **agent_1** writes a new passage based on that summary (`performative: request`).
 
-Based on a teaching exercise notebook for building an agent-to-agent communication loop (the notebook itself is not included in this repository).
+Inspired by a teaching exercise notebook by Harriet Farlow (from the book "Practical AI Security", No Starch Press, 2026) for building an agent-to-agent (A2A-like) communication loop (the notebook itself is not included in this repository).
 
-## Protocol
+### Protocol
 
 | Endpoint | Purpose |
 |---|---|
@@ -17,7 +19,7 @@ Based on a teaching exercise notebook for building an agent-to-agent communicati
 
 Messages are held in memory only (lost when the server stops).
 
-## Message flow
+### Message flow
 
 The agents never talk to each other directly; each only talks to the server, which acts as a
 shared mailbox. Every turn: GET the thread, read the last message (its `receiver` decides which
@@ -54,7 +56,7 @@ sequenceDiagram
     Note over A1,A2: Turns 3 to 6 repeat the same pattern
 ```
 
-## Setup
+### Setup
 
 ```powershell
 python -m venv .venv
@@ -66,13 +68,13 @@ copy .env.example .env      # then edit .env and add your key
 
 Get an API key at <https://platform.openai.com/account/api-keys> (billing must be set up).
 
-### API key safety
+#### API key safety
 
 - The key lives only in `.env` (or your OS environment as `OPENAI_API_KEY`).
 - `.env` is listed in `.gitignore`; only `.env.example` (placeholder) is committed.
 - Never paste the key into code, notebooks or commits. If it leaks, revoke it in the OpenAI dashboard.
 
-## Run
+### Run
 
 ```powershell
 python -m agentcomms --turns 6 --delay 1
@@ -112,7 +114,7 @@ sequenceDiagram
     end
 ```
 
-### REST vs MCP at a glance
+## REST vs MCP at a glance
 
 | | REST / A2A-style (`python -m agentcomms`) | MCP (`python -m agentcomms.run_demo_mcp`) |
 |---|---|---|
